@@ -4,6 +4,7 @@ import { Route, Routes } from "react-router-dom";
 import { Data } from "./pages/Data";
 import { Header } from "./components/Header";
 import { Home } from "./pages/Home";
+import { Sankey } from "./pages/Sankey";
 
 export const App = () => {
   return (
@@ -15,6 +16,7 @@ export const App = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/data" element={<Data />} />
+          <Route path="/sankey" element={<Sankey />} />
         </Routes>
       </PageLayout.Content>
     </PageLayout>

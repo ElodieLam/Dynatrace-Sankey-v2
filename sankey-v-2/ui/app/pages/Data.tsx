@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { Flex } from "@dynatrace/strato-components/layouts";
 import { Heading, Paragraph } from "@dynatrace/strato-components/typography";
@@ -14,6 +14,7 @@ import { DQLEditor } from "@dynatrace/strato-components/editors";
 import Colors from "@dynatrace/strato-design-tokens/colors";
 import { CriticalIcon } from "@dynatrace/strato-icons";
 import { useDql } from "@dynatrace-sdk/react-hooks";
+import { logDqlQuery } from "../utils/logDqlQuery";
 
 export const Data = () => {
   const initialQuery =
@@ -27,13 +28,20 @@ export const Data = () => {
     query: queryString,
   });
 
+  useEffect(() => {
+    logDqlQuery(queryString);
+  }, [queryString]);
+
   // onClickQuery function is executed when the "RUN QUERY" Button is clicked and fetches the data from Grail.
   function onClickQuery() {
     if (isLoading) {
       void cancel();
     } else {
       if (queryString !== editorQueryString) setQueryString(editorQueryString);
-      else void refetch();
+      else {
+        logDqlQuery(queryString);
+        void refetch();
+      }
     }
   }
 

@@ -8,7 +8,10 @@
     "id": "my.sankey.v.2",
     "scopes": [
       { "name": "storage:logs:read", "comment": "default template" },
-      { "name": "storage:buckets:read", "comment": "default template" }
+      { "name": "storage:buckets:read", "comment": "default template" },
+      { "name": "storage:user.events:read", "comment": "read RUM navigation events" },
+      { "name": "storage:entities:read", "comment": "resolve frontend application names" },
+      { "name": "storage:smartscape:read", "comment": "read frontend application entities" }
     ]
   }
 }
