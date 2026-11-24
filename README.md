@@ -19,6 +19,57 @@ Frontend options are fetched directly from `dt.entity.application`. The RUM
 filters events to that application (or includes all applications if you
 explicitly select **All frontends**).
 
+## DQL queries
+
+The frontend selector is populated by this entity query; it does not scan RUM
+events:
+
+```dql
+fetch dt.entity.application
+| filter isNotNull(id) and isNotNull(entity.name)
+| fields frontend_id = id, frontend = entity.name
+| sort frontend
+```
+
+After a frontend is selected, the app executes this journey query. The selected
+frontend filter is inserted after `fieldsAdd` and before the step filters. It
+is omitted when **All frontends** is selected.
+
+```dql
+fetch user.events
+| filter isNotNull(dt.rum.application.entity)
+| filter isNotNull(dt.rum.session.id)
+| fieldsAdd frontend_id = dt.rum.application.entity,
+    frontend = entityName(dt.rum.application.entity, type:"dt.entity.application"),
+    step_name = if(
+        characteristics.has_navigation == true or characteristics.has_page_summary == true,
+        page.url.path,
+        else: if(characteristics.has_view_summary == true,
+            view.name,
+            else: if(characteristics.has_user_interaction == true,
+                coalesce(ui_element.custom_name, ui_element.resolved_name, ui_element.name, interaction.name),
+                else: null)))
+| filter isNotNull(step_name)
+| filter isNotNull(start_time)
+| sort frontend_id, dt.rum.session.id, start_time
+| summarize
+    steps = collectArray(record(start_time, step_name), maxLength: 131072),
+    total_steps = count(),
+    by: {frontend_id, frontend, session_id = dt.rum.session.id}
+```
+
+The optional frontend filter is:
+
+```dql
+| filter frontend_id == "<selected frontend ID>"
+```
+
+The selected timeframe is passed through the `useDql` timeframe options rather
+than written as a `from:` clause. The journey query returns one row per session;
+the client orders collected steps by timestamp, groups identical paths, and
+selects the top 10 journeys. DQL's `maxResultRecords` is set to 10,000 for this
+query.
+
 The ranked list shows the dominant path and the session totals for the top 10.
 The Sankey chart aggregates only those journeys, preserves loops with
 position-specific node IDs, and shows transition counts and source continuation
